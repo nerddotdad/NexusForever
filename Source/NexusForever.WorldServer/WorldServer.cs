@@ -19,6 +19,7 @@ using NexusForever.Script;
 using NexusForever.Script.Configuration.Model;
 using NexusForever.Shared;
 using NexusForever.Shared.Configuration;
+using NexusForever.WorldServer.Configuration.Model;
 using NexusForever.WorldServer.Network;
 using NexusForever.WorldServer.Network.Internal.Handler;
 using NexusForever.WorldServer.Service;
@@ -66,6 +67,10 @@ namespace NexusForever.WorldServer
                         .Bind(hb.Configuration.GetSection("Realm"));
                     sc.AddOptions<ScriptConfig>()
                         .Bind(hb.Configuration.GetSection("Script"));
+                    sc.AddOptions<BugReportingConfig>()
+                        .Bind(hb.Configuration.GetSection("BugReporting"));
+
+                    sc.AddHttpClient("github-bug-reports");
 
                     sc.AddNetworkInternal();
                     sc.AddNetworkInternalBroker(hb.Configuration.GetSection("Network:Internal").Get<BrokerConfig>());

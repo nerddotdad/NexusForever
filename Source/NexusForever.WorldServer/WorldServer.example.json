@@ -62,5 +62,11 @@
             "Enable": true,
             "Directory": ""
         }
+    },
+    "BugReporting": {
+        "LocalLogPath": "",
+        "GitHubRepository": "",
+        "GitHubToken": "",
+        "GitHubLabels": ""
     }
 }

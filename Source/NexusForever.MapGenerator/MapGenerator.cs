@@ -40,8 +40,12 @@ namespace NexusForever.MapGenerator
 
         private static void ParameterOk(Parameters parameters)
         {
+            parameters.PatchPath = ExpandUserPath(parameters.PatchPath);
+            if (!string.IsNullOrEmpty(parameters.OutputDir))
+                parameters.OutputDir = ExpandUserPath(parameters.OutputDir);
+
             if (!Directory.Exists(parameters.PatchPath))
-                throw new DirectoryNotFoundException();
+                throw new DirectoryNotFoundException($"Patch path was not found: {parameters.PatchPath}");
 
             if (!parameters.Extract && !parameters.Generate)
             {
@@ -52,8 +56,8 @@ namespace NexusForever.MapGenerator
 
             if ((parameters.Extract || parameters.Generate) && !string.IsNullOrEmpty(parameters.OutputDir))
             {
-                if (!Directory.Exists(parameters.OutputDir))
-                    throw new DirectoryNotFoundException(parameters.OutputDir);
+                parameters.OutputDir = Path.GetFullPath(parameters.OutputDir);
+                Directory.CreateDirectory(parameters.OutputDir);
             }
 
             ArchiveManager.Instance.Initialise(parameters.PatchPath);
@@ -79,6 +83,29 @@ namespace NexusForever.MapGenerator
         private static string GetHelp()
         {
             return HelpText.AutoBuild(parserResult, h => h, e => e);
+        }
+
+        /// <summary>
+        /// Expands a leading <c>~</c> to the user profile so paths work when the shell does not expand them (e.g. quoted args in fish/bash).
+        /// </summary>
+        private static string ExpandUserPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return path;
+
+            path = path.Trim();
+            if (path == "~")
+                return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (path.StartsWith("~/", StringComparison.Ordinal) || path.StartsWith("~\\", StringComparison.Ordinal))
+            {
+                string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string tail = path.Length > 2 ? path[2..] : string.Empty;
+                tail = tail.Replace('\\', Path.DirectorySeparatorChar);
+                return Path.Combine(home, tail);
+            }
+
+            return path;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 using System.Text;
 using NexusForever.Shared;
@@ -157,7 +158,14 @@ namespace NexusForever.Network
         public string ReadWideStringFixed()
         {
             ushort length = ReadUShort();
-            byte[] data = ReadBytes(length * 2u);
+            if (length == 0)
+                return string.Empty;
+
+            byte[] data = ReadBytes((uint)(length * 2));
+            if (data.Length < 2)
+                return Encoding.Unicode.GetString(data);
+
+            // Length is wchar count including null terminator (see ClientHelloAuth).
             return Encoding.Unicode.GetString(data, 0, data.Length - 2);
         }
 
@@ -168,6 +176,83 @@ namespace NexusForever.Network
 
             byte[] data = ReadBytes(length);
             return Encoding.Unicode.GetString(data);
+        }
+
+        /// <summary>
+        /// Reads exactly <paramref name="totalWideChars"/> UTF-16 code units with no length prefix (fixed client buffer).
+        /// Stops appending at the first U+0000; remaining slots are still read to advance the stream.
+        /// </summary>
+        public string ReadWideStringBlock(int totalWideChars)
+        {
+            if (totalWideChars <= 0)
+                return string.Empty;
+
+            var sb = new StringBuilder(totalWideChars);
+            bool ended = false;
+            for (int i = 0; i < totalWideChars; i++)
+            {
+                ushort cu = ReadUShort();
+                if (ended)
+                    continue;
+
+                if (cu == 0)
+                    ended = true;
+                else
+                    sb.Append((char)cu);
+            }
+
+            return TrimTrailingWideBufferNoise(sb.ToString());
+        }
+
+        /// <summary>
+        /// Removes uninitialized / non-character tail from fixed wchar buffers (replacement chars, BOM, noncharacters, lone surrogates).
+        /// </summary>
+        private static string TrimTrailingWideBufferNoise(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return s;
+
+            int end = s.Length;
+            while (end > 0)
+            {
+                char c = s[end - 1];
+                if (c == '\uFFFD' || c == '\uFEFF' || c == '\uFFFE' || c == '\uFFFF' || c == '\0')
+                {
+                    end--;
+                    continue;
+                }
+
+                UnicodeCategory cat = char.GetUnicodeCategory(c);
+                if (cat == UnicodeCategory.PrivateUse || cat == UnicodeCategory.OtherNotAssigned)
+                {
+                    end--;
+                    continue;
+                }
+
+                if (char.IsLowSurrogate(c))
+                {
+                    if (end >= 2 && char.IsHighSurrogate(s[end - 2]))
+                        break;
+                    end--;
+                    continue;
+                }
+
+                if (char.IsHighSurrogate(c))
+                {
+                    end--;
+                    continue;
+                }
+
+                if (char.IsControl(c) && c != '\n' && c != '\r' && c != '\t')
+                {
+                    end--;
+                    continue;
+                }
+
+                break;
+            }
+
+            return end == s.Length ? s : s[..end];
         }
 
         public string ReadString()

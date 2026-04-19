@@ -54,7 +54,10 @@ namespace NexusForever.GameTable
         public GameTable<BindPointEntry> BindPoint { get; private set; }
         public GameTable<BinkMovieEntry> BinkMovie { get; private set; }
         public GameTable<BinkMovieSubtitleEntry> BinkMovieSubtitle { get; private set; }
+        [GameData]
         public GameTable<BugCategoryEntry> BugCategory { get; private set; }
+
+        [GameData]
         public GameTable<BugSubcategoryEntry> BugSubcategory { get; private set; }
         public GameTable<CCStateAdditionalDataEntry> CCStateAdditionalData { get; private set; }
         public GameTable<CCStateDiminishingReturnsEntry> CCStateDiminishingReturns { get; private set; }

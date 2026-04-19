@@ -40,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NexusForever.GameTable\NexusForever.GameTable.csproj" />
     <ProjectReference Include="..\NexusForever.Game\NexusForever.Game.csproj" />
     <ProjectReference Include="..\NexusForever.Network.Internal\NexusForever.Network.Internal.csproj" />
     <ProjectReference Include="..\NexusForever.Network.World\NexusForever.Network.World.csproj" />

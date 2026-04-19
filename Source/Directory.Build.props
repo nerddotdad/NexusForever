@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Workaround NETSDK1226 when ASP.NET Core pruning metadata is missing (common on distro-packaged SDKs). -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+  </PropertyGroup>
+</Project>
