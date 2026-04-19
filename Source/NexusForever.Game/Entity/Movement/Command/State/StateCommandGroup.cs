@@ -1,5 +1,6 @@
 ﻿using NexusForever.Game.Abstract.Entity.Movement;
 using NexusForever.Game.Abstract.Entity.Movement.Command.State;
+using NexusForever.Game.Static.Entity;
 using NexusForever.Game.Static.Entity.Movement.Command;
 using NexusForever.Game.Static.Entity.Movement.Command.State;
 using NexusForever.Network.World.Entity;
@@ -107,6 +108,7 @@ namespace NexusForever.Game.Entity.Movement.Command.State
         /// </summary>
         public void SetState(StateFlags state)
         {
+            StateFlags previousState = command?.GetState() ?? StateFlags.None;
             Finalise();
 
             var command = factory.Resolve<StateCommand>();
@@ -114,6 +116,13 @@ namespace NexusForever.Game.Entity.Movement.Command.State
             this.command = command;
 
             IsDirty = true;
+
+            bool wasSprintingBefore = (previousState & StateFlags.Sprint) != 0;
+            bool isSprintingNow = (state & StateFlags.Sprint) != 0;
+            if (wasSprintingBefore != isSprintingNow && movementManager?.Owner != null)
+            {
+                movementManager.Owner.CalculateProperty(Game.Static.Entity.Property.MoveSpeedMultiplier);
+            }
         }
 
         /// <summary>

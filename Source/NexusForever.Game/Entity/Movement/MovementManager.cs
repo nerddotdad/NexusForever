@@ -277,7 +277,7 @@ namespace NexusForever.Game.Entity.Movement
                         break;
                     case SetStateCommand setState:
                     {
-                        commandValidator.ValidateState();
+                        commandValidator.ValidateState(Owner, setState.State);
                         SetState(setState.State);
                         break;
                     }

@@ -228,6 +228,19 @@ namespace NexusForever.Game.Entity
                     }
                 }
             }
+
+            if (propertyValue.Property == Property.MoveSpeedMultiplier)
+            {
+                bool isSprinting = (MovementManager.GetState() & Game.Static.Entity.Movement.Command.State.StateFlags.Sprint) != 0;
+                if (isSprinting)
+                {
+                    float currentEndurance = GetStatFloat(Stat.Resource0) ?? 0f;
+                    if (currentEndurance > 0f)
+                    {
+                        propertyValue.Value *= 1.5f;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -246,6 +259,38 @@ namespace NexusForever.Game.Entity
 
             if (Shield < MaxShieldCapacity)
                 Shield += (uint)(MaxShieldCapacity * GetPropertyValue(Property.ShieldRegenPct) * statUpdateTimer.Duration);
+
+            HandleEnduranceUpdate(lastTick);
+        }
+
+        /// <summary>
+        /// Handles endurance (sprint) consumption and regeneration.
+        /// </summary>
+        private void HandleEnduranceUpdate(double lastTick)
+        {
+            float currentEndurance = GetStatFloat(Stat.Resource0) ?? 0f;
+            float maxEndurance = GetPropertyValue(Property.ResourceMax0);
+
+            bool isSprinting = (MovementManager.GetState() & Game.Static.Entity.Movement.Command.State.StateFlags.Sprint) != 0;
+            bool isMoving = (MovementManager.GetState() & Game.Static.Entity.Movement.Command.State.StateFlags.Move) != 0;
+
+            if (isSprinting && isMoving)
+            {
+                float sprintDrain = maxEndurance * 0.1f * (float)statUpdateTimer.Duration;
+                float newEndurance = Math.Max(0f, currentEndurance - sprintDrain);
+                SetStat(Stat.Resource0, newEndurance);
+
+                if (newEndurance <= 0f)
+                {
+                    MovementManager.SetState(MovementManager.GetState() & ~Game.Static.Entity.Movement.Command.State.StateFlags.Sprint);
+                }
+            }
+            else if (currentEndurance < maxEndurance)
+            {
+                float regenRate = GetPropertyValue(Property.ResourceRegenMultiplier0);
+                float regenAmount = maxEndurance * regenRate * 0.05f * (float)statUpdateTimer.Duration;
+                SetStat(Stat.Resource0, Math.Min(maxEndurance, currentEndurance + regenAmount));
+            }
         }
 
         /// <summary>
