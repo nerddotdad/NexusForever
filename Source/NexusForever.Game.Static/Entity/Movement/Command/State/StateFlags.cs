@@ -7,7 +7,7 @@
         Velocity     = 0x0001,
         Move         = 0x0002,
         Jump         = 0x0040,
-        Unknown80    = 0x0080,
+        Sprint       = 0x0080,
         Unknown100   = 0x0100,
         Unknown200   = 0x0200,
         Unknown400   = 0x0400,

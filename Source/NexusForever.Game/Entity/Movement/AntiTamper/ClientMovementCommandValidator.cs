@@ -1,4 +1,7 @@
-﻿using NexusForever.Game.Abstract.Entity.Movement.AntiTamper;
+﻿using NexusForever.Game.Abstract.Entity;
+using NexusForever.Game.Abstract.Entity.Movement.AntiTamper;
+using NexusForever.Game.Static.Entity;
+using NexusForever.Game.Static.Entity.Movement.Command.State;
 
 namespace NexusForever.Game.Entity.Movement.AntiTamper
 {
@@ -32,9 +35,19 @@ namespace NexusForever.Game.Entity.Movement.AntiTamper
         /// <summary>
         /// Validate the state from the client to ensure the client is not tampering with the state.
         /// </summary>
-        public void ValidateState()
+        public void ValidateState(IWorldEntity entity, StateFlags state)
         {
-            // TODO
+            if ((state & StateFlags.Sprint) != 0)
+            {
+                if (entity is IUnitEntity unitEntity)
+                {
+                    float currentEndurance = unitEntity.GetStatFloat(Stat.Resource0) ?? 0f;
+                    if (currentEndurance <= 0f)
+                    {
+                        return;
+                    }
+                }
+            }
         }
     }
 }

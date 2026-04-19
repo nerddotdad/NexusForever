@@ -1,4 +1,6 @@
-﻿namespace NexusForever.Game.Abstract.Entity.Movement.AntiTamper
+﻿using NexusForever.Game.Static.Entity.Movement.Command.State;
+
+namespace NexusForever.Game.Abstract.Entity.Movement.AntiTamper
 {
     public interface IClientMovementCommandValidator
     {
@@ -20,6 +22,6 @@
         /// <summary>
         /// Validate the state from the client to ensure the client is not tampering with the state.
         /// </summary>
-        void ValidateState();
+        void ValidateState(IWorldEntity entity, StateFlags state);
     }
 }
